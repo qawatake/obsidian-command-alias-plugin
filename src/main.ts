@@ -47,11 +47,25 @@ export default class CommandAliasPlugin extends Plugin {
 		this.addSettingTab(new CommandAliasPluginSettingTab(this.app, this));
 	}
 
-	private addAliasCommand(aliasId: string) {
+	private async getCommand(commandId: string): Promise<Command | undefined> {
+    const app = this.app as AppExtension;
+    for (let i = 0; i < 10; i++) {
+      const target = app.commands.commands[commandId];
+      if (target) {
+        return target;
+      }
+      await new Promise((s) => {
+        setTimeout(s, 1);
+      });
+    }
+    return undefined;
+  }
+
+	private async addAliasCommand(aliasId: string) {
 		let app = this.app as AppExtension;
 
 		const alias = this.settings.aliases[aliasId];
-		const target = app.commands.commands[alias.commandId];
+		const target = await this.getCommand(alias.commandId);
 		if (target) {
 			let command: Command = {
 				id: `alias:${aliasId}`,
